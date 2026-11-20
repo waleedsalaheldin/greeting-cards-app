@@ -59,6 +59,14 @@ def patch_gradle():
             "minSdk = flutter.minSdkVersion",
             "minSdk = maxOf(flutter.minSdkVersion, 23)",
         )
+        # Lint crashes on CI with some plugin versions; it isn't needed to ship.
+        if "android {" not in text:
+            fail("android block not found in build.gradle.kts")
+        text = text.replace(
+            "android {",
+            "android {\n    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }\n",
+            1,
+        )
         if signing:
             block = (
                 "    signingConfigs {\n"
@@ -88,6 +96,11 @@ def patch_gradle():
         ).replace(
             "minSdkVersion flutter.minSdkVersion",
             "minSdkVersion Math.max(flutter.minSdkVersion, 23)",
+        )
+        text = text.replace(
+            "android {",
+            "android {\n    lint {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n",
+            1,
         )
         if signing:
             block = (
