@@ -11,9 +11,32 @@ class Ads {
   static String get bannerId =>
       _bannerFromBuild.isEmpty ? _testBannerId : _bannerFromBuild;
 
-  static Future<void> init() async {
+  static bool _started = false;
+
+  /// بتبقى true بعد ما الإعلانات تتشغل (بعد خطوة الموافقة).
+  static final ready = ValueNotifier<bool>(false);
+
+  /// بيطلب موافقة المستخدم (لأوروبا وبريطانيا) لو مطلوبة، وبعدين يشغّل الإعلانات.
+  static void init() {
+    try {
+      ConsentInformation.instance.requestConsentInfoUpdate(
+        ConsentRequestParameters(),
+        () {
+          ConsentForm.loadAndShowConsentFormIfRequired((_) => _start());
+        },
+        (_) => _start(),
+      );
+    } catch (_) {
+      _start();
+    }
+  }
+
+  static Future<void> _start() async {
+    if (_started) return;
+    _started = true;
     try {
       await MobileAds.instance.initialize();
+      ready.value = true;
     } catch (_) {
       // التطبيق يشتغل عادي حتى لو الإعلانات فشلت.
     }
@@ -34,6 +57,21 @@ class _BannerAdBoxState extends State<BannerAdBox> {
   @override
   void initState() {
     super.initState();
+    if (Ads.ready.value) {
+      _load();
+    } else {
+      Ads.ready.addListener(_onReady);
+    }
+  }
+
+  void _onReady() {
+    if (Ads.ready.value && _ad == null && mounted) {
+      Ads.ready.removeListener(_onReady);
+      _load();
+    }
+  }
+
+  void _load() {
     _ad = BannerAd(
       adUnitId: Ads.bannerId,
       size: AdSize.banner,
@@ -52,6 +90,7 @@ class _BannerAdBoxState extends State<BannerAdBox> {
 
   @override
   void dispose() {
+    Ads.ready.removeListener(_onReady);
     _ad?.dispose();
     super.dispose();
   }

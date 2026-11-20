@@ -85,9 +85,16 @@ class _EditorScreenState extends State<EditorScreen> {
       appBar: AppBar(
         title: Text(widget.occasion.title),
         centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'مشاركة',
+            onPressed: _sharing ? null : _share,
+            icon: const Icon(Icons.share),
+          ),
+        ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
           Center(
             child: ConstrainedBox(
@@ -105,6 +112,20 @@ class _EditorScreenState extends State<EditorScreen> {
                   ),
                 ),
               ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Center(
+            child: FilledButton.icon(
+              onPressed: _sharing ? null : _share,
+              icon: _sharing
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.share),
+              label: const Text('مشاركة البطاقة'),
             ),
           ),
           const SizedBox(height: 20),
@@ -227,18 +248,6 @@ class _EditorScreenState extends State<EditorScreen> {
             ),
           ),
         ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _sharing ? null : _share,
-        icon: _sharing
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.share),
-        label: const Text('مشاركة البطاقة'),
       ),
       bottomNavigationBar: const BannerAdBox(),
     );

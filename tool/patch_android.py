@@ -59,6 +59,14 @@ def patch_gradle():
             "minSdk = flutter.minSdkVersion",
             "minSdk = maxOf(flutter.minSdkVersion, 23)",
         )
+        # Google Play: new apps must target API 36+
+        text = text.replace(
+            "targetSdk = flutter.targetSdkVersion",
+            "targetSdk = maxOf(flutter.targetSdkVersion, 36)",
+        ).replace(
+            "compileSdk = flutter.compileSdkVersion",
+            "compileSdk = maxOf(flutter.compileSdkVersion, 36)",
+        )
         # Lint crashes on CI with some plugin versions; it isn't needed to ship.
         if "android {" not in text:
             fail("android block not found in build.gradle.kts")
