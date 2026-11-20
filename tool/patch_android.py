@@ -22,6 +22,12 @@ def patch_manifest():
     text = path.read_text(encoding="utf-8")
 
     app_id = os.environ.get("ADMOB_APP_ID", "").strip() or TEST_ADMOB_APP_ID
+    # A wrong App ID makes the app crash on launch. The App ID has "~",
+    # the ad unit ID has "/" and is a common mix-up.
+    if not app_id.startswith("ca-app-pub-") or "~" not in app_id:
+        print("::warning::ADMOB_APP_ID looks wrong (must look like "
+              "ca-app-pub-XXXX~YYYY). Using Google's test App ID instead.")
+        app_id = TEST_ADMOB_APP_ID
 
     if 'android:label="' not in text:
         fail("android:label not found in manifest")
